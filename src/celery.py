@@ -1,14 +1,13 @@
 import logging
 from datetime import datetime
+from datetime import timezone
 
 import devtools
 import pymongo
 from celery import Celery
-from datetime import timezone
-
+from celery.schedules import crontab
 from celery.signals import after_setup_logger
 from decouple import config as env_config
-from celery.schedules import crontab
 
 from src.main import config
 from .web_scraper import get_rank
@@ -21,7 +20,7 @@ celery_worker.config_from_object(config.celery_settings)
 
 
 @after_setup_logger.connect
-def setup_loggers(logger, *args, **kwargs):
+def setup_loggers(logger):
     formatter = logging.Formatter(
         "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )

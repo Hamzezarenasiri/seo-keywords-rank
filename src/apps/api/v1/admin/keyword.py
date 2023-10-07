@@ -73,7 +73,7 @@ async def admin_create_keyword(
 ):
     domain = tldextract.extract(payload.domain).registered_domain
     keyword = await keyword_controller.get_or_create_obj(
-        criteria=dict(keyword=payload.keyword, domain=domain), new_data=payload
+        criteria={"keyword": payload.keyword, "domain": domain}, new_data=payload
     )
     celery_client.send_task(
         "src.celery.get_rank_task",
