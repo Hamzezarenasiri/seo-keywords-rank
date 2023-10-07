@@ -1,0 +1,89 @@
+version: "3"
+
+services:
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: password
+      RABBITMQ_DEFAULT_VHOST: selenium
+    ports:
+      - 5672:5672
+    networks:
+      - keywords_net
+  redis:
+    image: redis:6.2.7
+    container_name: keywords_redis
+    restart: always
+    ports:
+      - 6379:6379
+    networks:
+      - keywords_net
+  mongodb:
+    image: mongo
+    container_name: keywords_mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: fanpino
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - 27017:27017
+    volumes:
+      - ~/DBs/MongoDB:/data/db
+    networks:
+      - keywords_net
+  keyword-web:
+    container_name: keyword_web
+    build: .
+    command: >
+      bash -c "uvicorn src.main.main:app --host 0.0.0.0 --port 8000 --reload  --workers 2"
+    restart: always
+    ports:
+      - 8800:8000
+    depends_on:
+      - redis
+      - mongodb
+      - rabbitmq
+    env_file:
+      - .env
+    networks:
+      - keywords_net
+    volumes:
+      - .:/code
+  celery_worker:
+    build:
+      context: .
+    command: >
+      bash -c "celery -A src.celery worker --loglevel=INFO"
+    environment:
+      CELERY_BROKER_URL: amqp://admin:password@rabbitmq/selenium
+      CELERY_BACKEND_URL: redis://redis
+    depends_on:
+      - redis
+      - mongodb
+      - rabbitmq
+    networks:
+      - keywords_net
+    volumes:
+      - .:/code
+  celery_beat:
+    build:
+      context: .
+    container_name: keywords_celery_beat
+    command: >
+      bash -c "celery -A src.celery beat --max-interval 300 -l warning"
+    restart: always
+    depends_on:
+      - mongodb
+      - redis
+      - rabbitmq
+    environment:
+      CELERY_BROKER_URL: amqp://admin:password@rabbitmq/selenium
+      CELERY_BACKEND_URL: redis://redis
+    volumes:
+      - .:/code
+    networks:
+      - keywords_net
+networks:
+  keywords_net:
+    driver: bridge

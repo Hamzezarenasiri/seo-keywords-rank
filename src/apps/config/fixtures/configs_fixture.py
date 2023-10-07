@@ -1,0 +1,40 @@
+from decimal import Decimal
+
+configs = {
+    "auto_confirmation": True,
+    "default_min_stock_quantity": 1,
+    "express_shipping_cost": Decimal(),
+    "is_deleted": False,
+    "is_enable": True,
+    "offer_icon": None,
+    "shipping_guarantee": Decimal(),
+    "shipping_max_time_minutes": 2000,
+    "shipping_min_time_minutes": 120,
+    "vat_rate": 0.04,
+    "other_configs": {
+        "products_page_title": "Discover our Beauty assortment. We have got a ton of flavours just for you!",
+        "product_detail_page_flavor_text": "See your favorite flavor",
+    },
+    "office_address": {
+        "location": {
+            "coordinates": [25.10, 55.17],
+            "type": "Point",
+        },
+        "first_name": "beauty",
+        "last_name": "beauty",
+        "country_code": "UAE",
+        "phone_number": None,
+        "alternate_phone_number": None,
+        "street": None,
+        "address_line_1": "beauty store beauty store",
+        "address_line_2": None,
+        "state": "state",
+        "city": "city",
+        "postal_code": None,
+        "type": None,
+        "landmark": None,
+        "address_name": None,
+        "building_name": None,
+        "area": "Dubai area",
+    },
+}
