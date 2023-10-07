@@ -16,7 +16,7 @@ RUN apt-get update \
 
 # Check available versions here: https://www.ubuntuupdates.org/package/google_chrome/stable/main/base/google-chrome-stable
 ARG CHROME_VERSION="114.0.5735.198-1"
-RUN wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}_amd64.deb \
+RUN wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}_amd64.deb --no-check-certificate \
   && apt install -y /tmp/chrome.deb \
   && rm /tmp/chrome.deb
 
