@@ -6,7 +6,6 @@ aiofiles==23.2.1
 aiologger==0.7.0
 bcrypt==4.0.1
 boto3== 1.28.62
-celery==5.3.4
 devtools[pygments]==0.12.2
 dict2xml==1.7.3
 Faker==19.6.2

@@ -30,7 +30,7 @@ def create_start_app_handler() -> Callable:
         services.global_services.LOGGER.info("SNS Connected :)")
         services.global_services.CACHE = await events.initialize_cache()
         services.global_services.LOGGER.info("CACHE Connected :)")
-        services.global_services.BROKER = await events.initialize_broker()
+        # services.global_services.BROKER = await events.initialize_broker()
         services.global_services.ADMIN_SETTINGS = (
             await configs_crud.get_configs_object()
         )

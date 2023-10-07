@@ -2,13 +2,7 @@ import re
 from typing import List
 
 import tldextract
-from celery import Celery
-from decouple import config
-from fastapi import (
-    APIRouter,
-    Depends,
-    Query,
-)
+from fastapi import APIRouter, Depends, Query, BackgroundTasks
 
 from src.apps.keyword import schema as keyword_schemas
 from src.apps.keyword.controller import keyword_controller
@@ -22,10 +16,10 @@ from src.main.config import collections_names
 entity = collections_names.KEYWORDS
 keyword_router = APIRouter()
 
-CELERY_BROKER_URL = config("CELERY_BROKER_URL")
-CELERY_BACKEND_URL = config("CELERY_BACKEND_URL")
+# CELERY_BROKER_URL = config("CELERY_BROKER_URL")
+# CELERY_BACKEND_URL = config("CELERY_BACKEND_URL")
 
-celery_client = Celery("client", broker=CELERY_BROKER_URL, backend=CELERY_BACKEND_URL)
+# celery_client = Celery("client", broker=CELERY_BROKER_URL, backend=CELERY_BACKEND_URL)
 
 
 @keyword_router.get(
@@ -68,17 +62,23 @@ async def admin_get_keyword(
 @return_on_failure
 async def admin_create_keyword(
     payload: keyword_schemas.KeywordCreateIn,
-    # background_tasks: BackgroundTasks,
+    background_tasks: BackgroundTasks,
     # current_user: UserDBReadModel = Security(get_admin_user, scopes=[entity, "create"]),
 ):
     domain = tldextract.extract(payload.domain).registered_domain
     keyword = await keyword_controller.get_or_create_obj(
         criteria={"keyword": payload.keyword, "domain": domain}, new_data=payload
     )
-    celery_client.send_task(
-        "src.celery.get_rank_task",
-        kwargs={"keyword": payload.keyword, "domain": domain},
+    background_tasks.add_task(
+        func=keyword_controller.get_and_update_rank,
+        keyword=payload.keyword,
+        domain=domain,
     )
+
+    # celery_client.send_task(
+    #     "src.celery.get_rank_task",
+    #     kwargs={"keyword": payload.keyword, "domain": domain},
+    # )
     # background_tasks.add_task(
     #     func=log_controller.create_log,
     #     action=LogActionEnum.insert,
@@ -98,8 +98,10 @@ async def admin_create_keyword(
 @return_on_failure
 async def update_all_ranks(
     # _: UserDBReadModel = Security(get_admin_user, scopes=[entity, "list"]),
+    background_tasks: BackgroundTasks,
 ):
-    celery_client.send_task("src.celery.get_rank_daily_task")
+    background_tasks.add_task(func=keyword_controller.update_all_rank)
+    # celery_client.send_task("src.celery.get_rank_daily_task")
     return Response(message="Ok - please wait ...")
 
 

@@ -1,6 +1,6 @@
 import logging
 
-import celery
+# import celery
 
 from src.core.aws.sns import SESHandler, SNSHandler
 from src.core.logger import create_logger
@@ -16,10 +16,10 @@ async def initialize_logger() -> logging.Logger:
     return create_logger(__name__, config.app_settings.LOG_LEVEL)
 
 
-async def initialize_broker() -> celery.Celery:
-    celery_app = celery.Celery("tasks")
-    celery_app.config_from_object(config.celery_settings)
-    return celery_app
+# async def initialize_broker() -> celery.Celery:
+#     celery_app = celery.Celery("tasks")
+#     celery_app.config_from_object(config.celery_settings)
+#     return celery_app
 
 
 async def initialize_cache() -> BaseCache:
