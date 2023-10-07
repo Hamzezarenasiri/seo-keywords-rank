@@ -43,7 +43,7 @@ services:
     depends_on:
       - redis
       - mongodb
-      - rabbitmq
+#      - rabbitmq
     env_file:
       - .env
     networks:
@@ -57,11 +57,12 @@ services:
       bash -c "celery -A src.celery worker --loglevel=INFO"
     environment:
       CELERY_BROKER_URL: amqp://admin:password@rabbitmq/selenium
+#      CELERY_BROKER_URL: CELERY_BROKER_URL=redis://redis:6379/10
       CELERY_BACKEND_URL: redis://redis
     depends_on:
       - redis
       - mongodb
-      - rabbitmq
+#      - rabbitmq
     networks:
       - keywords_net
     volumes:
@@ -76,9 +77,10 @@ services:
     depends_on:
       - mongodb
       - redis
-      - rabbitmq
+#      - rabbitmq
     environment:
       CELERY_BROKER_URL: amqp://admin:password@rabbitmq/selenium
+#      CELERY_BROKER_URL: CELERY_BROKER_URL=redis://redis:6379/10
       CELERY_BACKEND_URL: redis://redis
     volumes:
       - .:/code

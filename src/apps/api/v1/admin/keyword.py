@@ -79,7 +79,6 @@ async def admin_create_keyword(
         "src.celery.get_rank_task",
         kwargs={"keyword": payload.keyword, "domain": domain},
     )
-    celery_client.send_task("src.celery.get_rank_daily_task")
     # background_tasks.add_task(
     #     func=log_controller.create_log,
     #     action=LogActionEnum.insert,
@@ -88,6 +87,20 @@ async def admin_create_keyword(
     #     entity_id=keyword.id,
     # )
     return Response[keyword_schemas.KeywordDetailSchema](data=keyword)
+
+
+@keyword_router.get(
+    "/update_all_ranks",
+    responses={**common_responses},
+    response_model=Response,
+    description="by `HamzeZN`",
+)
+@return_on_failure
+async def update_all_ranks(
+    # _: UserDBReadModel = Security(get_admin_user, scopes=[entity, "list"]),
+):
+    celery_client.send_task("src.celery.get_rank_daily_task")
+    return Response(message="Ok - please wait ...")
 
 
 # @keyword_router.get(

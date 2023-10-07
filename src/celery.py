@@ -51,7 +51,6 @@ def get_rank_task(keyword: str, domain: str, page: int = 1):
     print(
         "-------------------------------- Finished get_rank_task --------------------------------"
     )
-    mongo.disconnect()
 
 
 @celery_worker.task
@@ -79,7 +78,6 @@ def get_rank_daily_task():
     print(
         "-------------------------------- Finished get_rank_daily_task --------------------------------"
     )
-    mongo.disconnect()
 
 
 celery_worker.conf.beat_schedule = {
