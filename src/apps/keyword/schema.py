@@ -28,8 +28,9 @@ class KeywordsGetSubListOut(BaseKeywordSchema):
     pass
 
 
-class KeywordUpdateIn(BaseKeywordSchema):
-    pass
+class KeywordUpdateIn(BaseSchema):
+    keyword: str
+    domain: str
 
 
 class KeywordUpdateOut(BaseKeywordSchema):

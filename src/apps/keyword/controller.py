@@ -28,15 +28,16 @@ class KeywordController(BaseController):
             "-------------------------------- Finished get_rank_task --------------------------------"
         )
 
-    def update_all_rank(self):
+    def update_all_rank(self, criteria: dict = None):
+        if criteria is None:
+            criteria = {}
         print(
             "-------------------------------- start get_rank_daily_task --------------------------------"
         )
         mongo = pymongo.MongoClient(config.db_settings.URI)
         keyword_db = mongo.get_database(config.db_settings.DATABASE_NAME)
-        keywords = keyword_db.keywords.find({"is_deleted": False}).sort(
-            "last_rank_update_time"
-        )
+        criteria["is_deleted"] = False
+        keywords = keyword_db.keywords.find(criteria).sort("last_rank_update_time")
         for keyword in keywords:
             rank = get_rank(keyword.get("keyword"), keyword.get("domain"), page=1)
             devtools.debug(rank)

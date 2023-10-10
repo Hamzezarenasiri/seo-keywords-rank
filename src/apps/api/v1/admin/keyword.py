@@ -9,7 +9,7 @@ from src.apps.keyword.controller import keyword_controller
 from src.core.base.schema import Response, PaginatedResponse
 from src.core.ordering import Ordering
 from src.core.pagination import Pagination
-from src.core.responses import common_responses
+from src.core.responses import common_responses, response_404
 from src.core.utils import return_on_failure
 from src.main.config import collections_names
 
@@ -29,7 +29,7 @@ keyword_router = APIRouter()
     description="by `HamzeZN`",
 )
 @return_on_failure
-async def admin_get_keyword(
+async def get_keyword(
     # _: UserDBReadModel = Security(get_admin_user, scopes=[entity, "list"]),
     keyword: None | str = Query(None),
     domain: None | str = Query(None),
@@ -60,7 +60,7 @@ async def admin_get_keyword(
     description="by `HamzeZN`",
 )
 @return_on_failure
-async def admin_create_keyword(
+async def create_keyword(
     payload: keyword_schemas.KeywordCreateIn,
     background_tasks: BackgroundTasks,
     # current_user: UserDBReadModel = Security(get_admin_user, scopes=[entity, "create"]),
@@ -97,10 +97,20 @@ async def admin_create_keyword(
 )
 @return_on_failure
 async def update_all_ranks(
-    # _: UserDBReadModel = Security(get_admin_user, scopes=[entity, "list"]),
     background_tasks: BackgroundTasks,
+    # _: UserDBReadModel = Security(get_admin_user, scopes=[entity, "list"]),
+    keyword: None | str = Query(None),
+    domain: None | str = Query(None),
 ):
-    background_tasks.add_task(func=keyword_controller.update_all_rank)
+    criteria = {}
+    if keyword:
+        criteria["keyword"] = keyword
+    if domain:
+        criteria["domain"] = domain
+    background_tasks.add_task(
+        func=keyword_controller.update_all_rank,
+        criteria={"keyword": keyword, "domain": domain},
+    )
     # celery_client.send_task("src.celery.get_rank_daily_task")
     return Response(message="Ok - please wait ...")
 
@@ -123,34 +133,31 @@ async def update_all_ranks(
 #     return Response[keyword_schemas.KeywordDetailSchema](data=keyword)
 #
 #
-# @keyword_router.patch(
-#     "/{keyword_id}",
-#     responses={
-#         **common_responses,
-#         **response_404,
-#     },
-#     response_model=Response[keyword_schemas.KeywordDetailSchema],
-#     description="by `HamzeZN`",
-# )
-# @return_on_failure
-# async def admin_update_keyword(
-#         payload: keyword_schemas.KeywordUpdateIn,
-#         background_tasks: BackgroundTasks,
-#         keyword_id: SchemaID = Path(...),
-#         current_user: UserDBReadModel = Security(get_admin_user, scopes=[entity, "update"]),
-# ):
-#     updated_keyword = await keyword_controller.update_single_obj(
-#         criteria={"id": keyword_id}, new_data=payload
-#     )
-#     background_tasks.add_task(
-#         func=log_controller.create_log,
-#         action=LogActionEnum.update,
-#         action_by=current_user.id,
-#         entity=entity,
-#         entity_id=updated_keyword.id,
-#     )
-#     return Response[keyword_schemas.KeywordDetailSchema](data=updated_keyword)
-#
+@keyword_router.patch(
+    "",
+    responses={
+        **common_responses,
+        **response_404,
+    },
+    response_model=Response[keyword_schemas.KeywordDetailSchema],
+    description="by `HamzeZN`",
+)
+@return_on_failure
+async def delete_keywords(
+    payload: keyword_schemas.KeywordUpdateIn,
+    # _: UserDBReadModel = Security(get_admin_user, scopes=[entity, "update"]),
+):
+    criteria = {}
+    if payload.keyword is None:
+        criteria["keyword"] = payload.keyword
+    if payload.domain is None:
+        criteria["domain"] = payload.domain
+    if not criteria:
+        return Response(status_code=422)
+    await keyword_controller.soft_delete_objs(**criteria)
+    return Response(status_code=204)
+
+
 #
 # @keyword_router.delete(
 #     "/{keyword_id}",
