@@ -3,10 +3,12 @@ from typing import List
 
 import tldextract
 from fastapi import APIRouter, Depends, Query, BackgroundTasks
+from pymongo.results import UpdateResult
 
 from src.apps.keyword import schema as keyword_schemas
 from src.apps.keyword.controller import keyword_controller
 from src.core.base.schema import Response, PaginatedResponse
+from src.core.common.exceptions import CustomHTTPException
 from src.core.ordering import Ordering
 from src.core.pagination import Pagination
 from src.core.responses import common_responses, response_404
@@ -109,7 +111,7 @@ async def update_all_ranks(
         criteria["domain"] = domain
     background_tasks.add_task(
         func=keyword_controller.update_all_rank,
-        criteria={"keyword": keyword, "domain": domain},
+        criteria=criteria,
     )
     # celery_client.send_task("src.celery.get_rank_daily_task")
     return Response(message="Ok - please wait ...")
@@ -139,7 +141,7 @@ async def update_all_ranks(
         **common_responses,
         **response_404,
     },
-    response_model=Response[keyword_schemas.KeywordDetailSchema],
+    response_model=Response,
     description="by `HamzeZN`",
 )
 @return_on_failure
@@ -148,14 +150,16 @@ async def delete_keywords(
     # _: UserDBReadModel = Security(get_admin_user, scopes=[entity, "update"]),
 ):
     criteria = {}
-    if payload.keyword is None:
+    if payload.keyword is not None:
         criteria["keyword"] = payload.keyword
-    if payload.domain is None:
+    if payload.domain is not None:
         criteria["domain"] = payload.domain
     if not criteria:
-        return Response(status_code=422)
-    await keyword_controller.soft_delete_objs(**criteria)
-    return Response(status_code=204)
+        raise CustomHTTPException(
+            status_code=422, detail="Can't Delete ALL !!!!!!!!!!!!!!"
+        )
+    result: UpdateResult = await keyword_controller.soft_delete_objs(**criteria)
+    return Response(message=f"{result.modified_count} items Deleted ........")
 
 
 #

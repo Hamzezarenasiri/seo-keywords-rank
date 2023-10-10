@@ -38,6 +38,7 @@ class KeywordController(BaseController):
         keyword_db = mongo.get_database(config.db_settings.DATABASE_NAME)
         criteria["is_deleted"] = False
         keywords = keyword_db.keywords.find(criteria).sort("last_rank_update_time")
+
         for keyword in keywords:
             rank = get_rank(keyword.get("keyword"), keyword.get("domain"), page=1)
             devtools.debug(rank)

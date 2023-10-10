@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 import pymongo
@@ -23,6 +24,7 @@ class KeywordBaseModel(
     keyword: str
     domain: str
     rank: None | int
+    last_rank_update_time: None | datetime
 
     class Config(BaseModel.Config):
         arbitrary_types_allowed = True

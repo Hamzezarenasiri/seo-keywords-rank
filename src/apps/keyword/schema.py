@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from src.core.base.schema import BaseSchema
 
 
@@ -5,9 +7,11 @@ class BaseKeywordSchema(BaseSchema):
     keyword: str
     domain: str
     rank: None | int
+    create_datetime: None | datetime
+    last_rank_update_time: None | datetime
 
 
-class KeywordCreateIn(BaseKeywordSchema):
+class KeywordCreateIn(BaseSchema):
     keyword: str
     domain: str
 
@@ -29,8 +33,8 @@ class KeywordsGetSubListOut(BaseKeywordSchema):
 
 
 class KeywordUpdateIn(BaseSchema):
-    keyword: str
-    domain: str
+    keyword: None | str
+    domain: None | str
 
 
 class KeywordUpdateOut(BaseKeywordSchema):
